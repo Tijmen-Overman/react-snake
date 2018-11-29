@@ -2,7 +2,14 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Home = () => <Wrapper>Stuff</Wrapper>
+// Components
+import Game from '../Game'
+
+const Home = () => (
+  <Wrapper>
+    <Game />
+  </Wrapper>
+)
 
 const Wrapper = styled.div`
   width: 100%;
