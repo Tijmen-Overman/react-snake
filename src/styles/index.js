@@ -1,32 +1,31 @@
 // @flow
 
 // Global stylesheet
-import { createGlobalStyle } from 'styled-components'
+import { createGlobalStyle, css } from 'styled-components'
 import styledNormalize from 'styled-normalize'
 
 // Styling
-import { colors } from '../styles/styleGuide'
+import colors from '../styles/colors'
+import { fontFaces } from '../styles/fonts'
 import { textStyles } from './textStyles'
 
-export const styles = `
+export const styles = css`
   ${styledNormalize}
+  ${fontFaces}
 
   html,
   body {
     width: 100%;
     height: 100%;
+    background-color: ${colors.white};
+    color: ${colors.black};
+
     ${textStyles.general};
-    background-color: ${colors.blueWhale};
-    color: ${colors.white};
   }
 
   #root {
     width: 100%;
     height: 100%;
-  }
-
-  a {
-    color: ${colors.white};
   }
 `
 

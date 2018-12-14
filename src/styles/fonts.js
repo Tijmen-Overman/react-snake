@@ -2,26 +2,13 @@ import { css } from 'styled-components'
 
 // Fonts
 const fonts = {
-  Merriweather: 'Merriweather'
-}
-
-// Font Weights
-const fontWeights = {
-  light: 300,
-  medium: 400,
-  bold: 700
+  PressStart: `'Press Start 2P', cursive`
 }
 
 // @import uses the same weights as the JM website for now.
 const fontFaces = css`
-  /* Merriweather */
-  @import url(
-    https://fonts.googleapis.com/css?family=Merriweather:700,
-    400,
-    400italic,
-    300,
-    300italic
-  );
+  /* Press Start 2P */
+  @import url('https://fonts.googleapis.com/css?family=Press+Start+2P');
 `
 
-export { fonts, fontWeights, fontFaces }
+export { fonts, fontFaces }

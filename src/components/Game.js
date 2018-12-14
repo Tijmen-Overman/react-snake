@@ -1,45 +1,55 @@
 // @flow
 import React, { Component } from 'react'
 
+// Utils
+import {
+  isOpposite,
+  isOutOfBounds,
+  isEatingFood,
+  isBitingTail
+} from '../services/checks'
+import getRandomCoords from '../services/getRandomCoords'
+
 // Styling
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
+
+// Components
+import Message from './interface/Message'
+import Start from './interface/Start'
+import Directions from './interface/Directions'
+import Snake from './elements/Snake'
+import Food from './elements/Food'
+// import Stats from './stats/Stats'
 
 // Types
-type Coord = {
-  x: number,
-  y: number
-}
-type Bounds = {
-  minY: number,
-  minX: number,
-  maxY: number,
-  maxX: number
-}
-type FoodItem = {
-  item: string,
-  coord: Coord
-}
-type Segment = {
-  width: number,
-  height: number
-}
+import type {
+  ISegments,
+  ISegmentSize,
+  IBounds,
+  IFoodItem
+} from '../types/types'
 
 type State = {
   direction: string,
-  segments: Array<Coord>,
-  segmentSize: Segment,
-  bounds: Bounds,
+  segments: ISegments,
+  segmentSize: ISegmentSize,
+  bounds: IBounds,
   started: boolean,
   paused: boolean,
-  food: FoodItem,
+  ended: boolean,
+  food: IFoodItem,
   score: number,
-  message: string
+  message: ?string
 }
 
 class Game extends Component<*, State> {
   state = {
     direction: 'up',
-    segments: [{ x: 12, y: 12 }, { x: 12, y: 13 }, { x: 12, y: 14 }],
+    segments: [
+      { direction: 'up', x: 12, y: 12 },
+      { direction: 'up', x: 12, y: 13 },
+      { direction: 'up', x: 12, y: 14 }
+    ],
     segmentSize: {
       width: window.innerWidth / 25,
       height: window.innerHeight / 25
@@ -56,94 +66,51 @@ class Game extends Component<*, State> {
     },
     started: false,
     paused: false,
+    ended: false,
     score: 0,
-    message: ''
+    message: null
   }
   timer = null
   speed = 250
-  directions = [
-    { direction: 'up', keyCode: 38 },
-    { direction: 'down', keyCode: 40 },
-    { direction: 'left', keyCode: 37 },
-    { direction: 'right', keyCode: 39 }
-  ]
   foodOptions = ['🍣', '🍔', '🍤', '🍟', '🥛', '🍺']
 
-  handleKey(e: SyntheticKeyboardEvent<HTMLInputElement>) {
-    // Up: 38 // Down: 40 // Left:  37 // Right:  39 // Space: 32
-    const match = this.directions.find(item => item.keyCode === e.keyCode)
-    if (match) {
-      this.changeDirection(match.direction)
-    } else if (e.keyCode === 32) {
-      this.togglePause()
-    }
-  }
-
-  isOpposite(newDirection: string): boolean {
+  changeDirection = (newDirection: string) => {
     const { direction } = this.state
-    return (
-      (direction === 'down' && newDirection === 'up') ||
-      (direction === 'up' && newDirection === 'down') ||
-      (direction === 'left' && newDirection === 'right') ||
-      (direction === 'right' && newDirection === 'left')
-    )
-  }
-
-  isOutOfBounds(coord: Coord): boolean {
-    return coord.x < 0 || coord.x > 24 || coord.y < 0 || coord.y > 24
-  }
-
-  isEatingFood(coord: Coord): boolean {
-    const { food } = this.state
-    return coord.x === food.coord.x && coord.y === food.coord.y
-  }
-
-  isBitingTail(coord: Coord): boolean {
-    const { segments } = this.state
-    const match = segments.find(
-      item => item.x === coord.x && item.y === coord.y
-    )
-    return match !== undefined
-  }
-
-  changeDirection(direction: string) {
-    if (!this.isOpposite(direction)) {
+    if (!isOpposite(newDirection, direction)) {
       this.setState({
-        direction: direction
+        direction: newDirection
       })
     }
   }
 
-  changeCoords() {
-    const { segments, direction } = this.state
+  changeCoords = () => {
+    const { segments, food, direction } = this.state
     let newSegments = segments.map((item, i) => {
       if (i === 0) {
         switch (direction) {
           case 'up':
-            return { x: item.x, y: item.y - 1 }
+            return { direction: 'up', x: item.x, y: item.y - 1 }
           case 'down':
-            return { x: item.x, y: item.y + 1 }
+            return { direction: 'down', x: item.x, y: item.y + 1 }
           case 'left':
-            return { y: item.y, x: item.x - 1 }
+            return { direction: 'left', y: item.y, x: item.x - 1 }
           case 'right':
           default:
-            return { y: item.y, x: item.x + 1 }
+            return { direction: 'right', y: item.y, x: item.x + 1 }
         }
       }
       return segments[i - 1]
     })
 
-    if (this.isEatingFood(newSegments[0])) {
+    if (isEatingFood(newSegments[0], food)) {
       newSegments[newSegments.length] = newSegments[segments.length - 1]
       this.toggleFood()
       this.updateScore()
     }
-    if (this.isOutOfBounds(newSegments[0])) {
-      this.togglePause()
-      this.showMessage(`You've run into a wall.\nYou've lost!`)
-    } else if (this.isBitingTail(newSegments[0])) {
-      this.togglePause()
-      this.showMessage(`OUCH! You bit your own tail.\nYou've lost!`)
+    if (isOutOfBounds(newSegments[0])) {
+      this.endGame(`Woops! You've run into a wall.`)
+    } else if (isBitingTail(newSegments[0], segments)) {
+      this.endGame(`OUCH! You bit your own tail.`)
     } else {
       this.setState({
         segments: newSegments
@@ -151,18 +118,26 @@ class Game extends Component<*, State> {
     }
   }
 
-  startGame() {
-    this.setState({ started: true })
+  handleStart = () => {
+    this.setState({
+      started: true,
+      ended: false,
+      paused: false
+    })
     this.toggleFood()
-    this.togglePause()
+    this.timer = setInterval(() => {
+      this.handleMovement()
+    }, this.speed)
   }
 
-  togglePause() {
+  togglePause = () => {
     const { started, paused } = this.state
     if (started) {
       if (!paused) {
         this.timer && clearInterval(this.timer)
-        this.showMessage(`Paused game...`)
+        this.setState({
+          message: `Paused game...`
+        })
       } else {
         this.timer = setInterval(() => {
           this.handleMovement()
@@ -175,64 +150,68 @@ class Game extends Component<*, State> {
     }
   }
 
-  showMessage(whatHappened: string) {
-    const { score } = this.state
-    const message = `${whatHappened}\nYou scored ${score} points!`
+  endGame = (message: string) => {
     this.setState({
+      ended: true,
       message
     })
   }
 
-  hideMessage() {
-    this.setState({ message: '' })
+  handleReplay = () => {
+    const { paused } = this.state
+    if (paused) {
+      this.togglePause()
+    } else {
+      this.resetGame()
+    }
   }
 
-  handleReplay() {
-    this.resetGame()
+  resetGame = () => {
+    this.setState({
+      direction: 'up',
+      segments: [
+        { direction: 'up', x: 12, y: 12 },
+        { direction: 'up', x: 12, y: 13 },
+        { direction: 'up', x: 12, y: 14 }
+      ],
+      message: null,
+      score: 0,
+      ended: false
+    })
   }
 
-  handleMovement() {
+  hideMessage = () => {
+    this.setState({ message: null })
+  }
+
+  handleMovement = () => {
     this.changeCoords()
   }
 
-  toggleFood() {
+  toggleFood = () => {
     const randomFood = Math.floor(Math.random() * this.foodOptions.length)
     const foodItem = this.foodOptions[randomFood]
-    const foodCoord = this.getRandomCoords()
+    const foodCoord = getRandomCoords()
 
     this.setState({
       food: { item: foodItem, coord: foodCoord }
     })
   }
 
-  updateScore() {
-    this.setState({
-      score: this.state.score + 1
-    })
+  updateScore = () => {
+    const score = this.state.score + 1
+    if (score % 5 === 0) {
+      this.updateSpeed()
+    }
+    this.setState({ score })
   }
 
-  getRandomCoords() {
-    const x = Math.floor(Math.random() * 24)
-    const y = Math.floor(Math.random() * 24)
-
-    return { x: x, y: y }
-  }
-
-  resetGame() {
-    this.setState({
-      direction: 'up',
-      segments: [{ x: 12, y: 12 }, { x: 12, y: 13 }, { x: 12, y: 14 }],
-      message: ''
-    })
-    this.togglePause()
-  }
-
-  componentDidMount() {
-    window.addEventListener('keydown', e => this.handleKey(e))
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', e => this.handleKey(e))
+  updateSpeed = () => {
+    this.timer && clearInterval(this.timer)
+    this.speed = this.speed - this.speed * 0.1
+    this.timer = setInterval(() => {
+      this.handleMovement()
+    }, this.speed)
   }
 
   render() {
@@ -242,65 +221,43 @@ class Game extends Component<*, State> {
       segmentSize,
       food,
       message,
-      started
+      started,
+      paused,
+      ended,
+      score
     } = this.state
 
     return (
       <Container>
-        {segments.map((item, i) => {
-          if (i === 0) {
-            return (
-              <Head
-                key={`snake-head`}
-                x={item.x}
-                y={item.y}
-                width={segmentSize.width}
-                height={segmentSize.height}
-                direction={direction}
-              />
-            )
-          } else if (i === segments.length - 1) {
-            return (
-              <Tail
-                key={`snake-tail-${i}`}
-                x={item.x}
-                y={item.y}
-                width={segmentSize.width}
-                height={segmentSize.height}
-                direction={direction}
-              />
-            )
-          } else {
-            return (
-              <Body
-                key={`snake-tail-${i}`}
-                x={item.x}
-                y={item.y}
-                width={segmentSize.width}
-                height={segmentSize.height}
-              />
-            )
-          }
-        })}
-        <Food
-          x={food.coord.x}
-          y={food.coord.y}
-          width={segmentSize.width}
-          height={segmentSize.height}
-        >
-          {food.item}
-        </Food>
-        {!started && (
-          <Start>
-            <Button onClick={() => this.startGame()}>Start Game</Button>
-          </Start>
-        )}
+        <Snake
+          direction={direction}
+          segments={segments}
+          segmentSize={segmentSize}
+        />
+        <Food snack={food} segmentSize={segmentSize} />
+        <Directions
+          currentDirection={direction}
+          ended={ended}
+          changeDirection={this.changeDirection}
+          togglePause={this.togglePause}
+        />
+        {!started && <Start onClick={this.handleStart} />}
         {message && (
-          <Message>
-            <Text>{message}</Text>
-            <Button onClick={() => this.handleReplay()}>Replay</Button>
-          </Message>
+          <Message
+            text={message}
+            paused={paused}
+            ended={ended}
+            score={score}
+            onClick={this.handleReplay}
+          />
         )}
+        {/* <Stats
+          speed={this.speed}
+          score={score}
+          paused={paused}
+          ended={ended}
+          direction={direction}
+        /> */}
       </Container>
     )
   }
@@ -312,86 +269,4 @@ const Container = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: white;
-`
-
-const Sizing = css`
-  box-sizing: border-box;
-  position: absolute;
-  top: ${props => `${props.y * props.height}px`};
-  left: ${props => `${props.x * props.width}px`};
-  width: ${props => `${props.width}px`};
-  height: ${props => `${props.height}px`};
-`
-
-const Head = styled.div`
-  ${Sizing};
-  border-radius: ${props =>
-    props.direction === 'up'
-      ? '5px 5px 0 0'
-      : props.direction === 'down'
-      ? '0 0 5px 5px'
-      : props.direction === 'left'
-      ? '5px 0 0 5px'
-      : '0 5px 5px 0'};
-  background-color: red;
-`
-
-const Body = styled.div`
-  ${Sizing};
-  background-color: green;
-`
-
-const Tail = styled.div`
-  ${Sizing};
-  border-radius: ${props =>
-    props.direction === 'up'
-      ? '0 0 20px 20px'
-      : props.direction === 'down'
-      ? '20px 20px 0 0'
-      : props.direction === 'left'
-      ? '0 20px 20px 0'
-      : '20px 0 0 20px'};
-  background-color: blue;
-`
-
-const Food = styled.div`
-  ${Sizing};
-  align-items: center;
-  display: flex;
-  font-size: ${props => `${props.width}px`};
-  line-height: 1;
-`
-
-const Message = styled.div`
-  box-sizing: border-box;
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  width: calc(100% - 40px);
-  padding: 10px;
-  background-color: white;
-  color: black;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-`
-
-const Text = styled.span`
-  color: black;
-`
-
-const Button = styled.button`
-  border: 1px solid red;
-`
-
-const Start = styled.div`
-  box-sizing: border-box;
-  position: absolute;
-  bottom: 50%;
-  left: 20px;
-  width: calc(100% - 40px);
-  padding: 10px;
-  transform: translateY(-50%);
-  background-color: white;
-  color: black;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
 `
