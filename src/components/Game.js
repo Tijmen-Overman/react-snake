@@ -19,6 +19,7 @@ import Start from './interface/Start'
 import Directions from './interface/Directions'
 import Snake from './elements/Snake'
 import Food from './elements/Food'
+import Pause from './interface/Pause'
 // import Stats from './stats/Stats'
 
 // Types
@@ -39,6 +40,7 @@ type State = {
   ended: boolean,
   food: IFoodItem,
   score: number,
+  speed: number,
   message: ?string
 }
 
@@ -68,10 +70,10 @@ class Game extends Component<*, State> {
     paused: false,
     ended: false,
     score: 0,
+    speed: 250,
     message: null
   }
   timer = null
-  speed = 250
   foodOptions = ['🍣', '🍔', '🍤', '🍟', '🥛', '🍺']
 
   changeDirection = (newDirection: string) => {
@@ -119,6 +121,7 @@ class Game extends Component<*, State> {
   }
 
   handleStart = () => {
+    const { speed } = this.state
     this.setState({
       started: true,
       ended: false,
@@ -127,21 +130,18 @@ class Game extends Component<*, State> {
     this.toggleFood()
     this.timer = setInterval(() => {
       this.handleMovement()
-    }, this.speed)
+    }, speed)
   }
 
   togglePause = () => {
-    const { started, paused } = this.state
+    const { started, paused, speed } = this.state
     if (started) {
       if (!paused) {
         this.timer && clearInterval(this.timer)
-        this.setState({
-          message: `Paused game...`
-        })
       } else {
         this.timer = setInterval(() => {
           this.handleMovement()
-        }, this.speed)
+        }, speed)
         this.hideMessage()
       }
       this.setState({
@@ -167,6 +167,10 @@ class Game extends Component<*, State> {
   }
 
   resetGame = () => {
+    this.timer && clearInterval(this.timer)
+    this.timer = setInterval(() => {
+      this.handleMovement()
+    }, 250)
     this.setState({
       direction: 'up',
       segments: [
@@ -176,6 +180,7 @@ class Game extends Component<*, State> {
       ],
       message: null,
       score: 0,
+      speed: 250,
       ended: false
     })
   }
@@ -207,11 +212,14 @@ class Game extends Component<*, State> {
   }
 
   updateSpeed = () => {
+    const { speed } = this.state
     this.timer && clearInterval(this.timer)
-    this.speed = this.speed - this.speed * 0.1
+    this.setState({
+      speed: speed - speed * 0.1
+    })
     this.timer = setInterval(() => {
       this.handleMovement()
-    }, this.speed)
+    }, speed)
   }
 
   render() {
@@ -252,12 +260,15 @@ class Game extends Component<*, State> {
           />
         )}
         {/* <Stats
-          speed={this.speed}
+          speed={speed}
           score={score}
           paused={paused}
           ended={ended}
           direction={direction}
         /> */}
+        {started && (
+          <Pause paused={paused} score={score} togglePause={this.togglePause} />
+        )}
       </Container>
     )
   }

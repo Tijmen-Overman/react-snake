@@ -1,12 +1,12 @@
 // @flow
 import React from 'react'
 
-// Components
-import Button from './Button'
-
 // Styling
 import styled from 'styled-components'
 import colors from '../../styles/colors'
+
+// Components
+import Button from './Button'
 
 // Types
 type Props = {

@@ -8,6 +8,7 @@ import { textStyles } from '../../styles/textStyles'
 
 // Components
 import Button from './Button'
+import Overlay from './Overlay'
 
 // Types
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 
 const Start = (props: Props) => {
   return (
-    <Container>
+    <Overlay>
       <Title>Welcome!</Title>
       <Content>
         Are you ready to play Snake? Use the arrow keys or press the screen to
@@ -24,27 +25,11 @@ const Start = (props: Props) => {
         playing!
       </Content>
       <Button onClick={props.onClick}>Start Game</Button>
-    </Container>
+    </Overlay>
   )
 }
 
 export default Start
-
-const Container = styled.div`
-  box-sizing: border-box;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: calc(100% - 40px);
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid ${colors.black};
-  transform: translate(-50%, -50%);
-  background-color: ${colors.white};
-  color: ${colors.black};
-  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 1);
-`
 
 const Title = styled.h1`
   margin: 0 0 10px;

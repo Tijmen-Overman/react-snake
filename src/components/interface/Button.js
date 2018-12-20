@@ -9,11 +9,16 @@ import animation from '../../styles/animation'
 // Types
 type Props = {
   children: Node,
+  className?: string,
   onClick: () => void
 }
 
 const Button = (props: Props) => {
-  return <Container onClick={props.onClick}>{props.children}</Container>
+  return (
+    <Container className={props.className} onClick={props.onClick}>
+      {props.children}
+    </Container>
+  )
 }
 
 export default Button
@@ -24,7 +29,7 @@ const Container = styled.button`
   border: 1px solid ${colors.black};
   transition: transform ${animation.fast.speed} ${animation.fast.easing},
     box-shadow ${animation.fast.speed} ${animation.fast.easing};
-  background-color: ${colors.white};
+  background: none;
   color: ${colors.black};
   box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 1);
   cursor: pointer;
