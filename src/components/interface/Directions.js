@@ -7,10 +7,14 @@ import { isOpposite } from '../../services/checks'
 // Styling
 import styled from 'styled-components'
 
+// Components
+import Arrow from './Arrow'
+
 // Type
 type Props = {
   currentDirection: string,
   ended: boolean,
+  highlighted: boolean,
   changeDirection: (newDirection: string) => void,
   togglePause: () => void
 }
@@ -60,24 +64,37 @@ class Directions extends Component<Props> {
   }
 
   render() {
+    const { highlighted } = this.props
     return (
       <Container>
         <Direction
           onClick={(e, direction) => this.handleTouch(e, 'up')}
           direction={'up'}
-        />
+          highlight={highlighted}
+        >
+          <Arrow direction={'up'} highlight={highlighted} />
+        </Direction>
         <Direction
           onClick={(e, direction) => this.handleTouch(e, 'left')}
           direction={'left'}
-        />
+          highlight={highlighted}
+        >
+          <Arrow direction={'left'} highlight={highlighted} />
+        </Direction>
         <Direction
           onClick={(e, direction) => this.handleTouch(e, 'right')}
           direction={'right'}
-        />
+          highlight={highlighted}
+        >
+          <Arrow direction={'right'} highlight={highlighted} />
+        </Direction>
         <Direction
           onClick={(e, direction) => this.handleTouch(e, 'down')}
           direction={'down'}
-        />
+          highlight={highlighted}
+        >
+          <Arrow direction={'down'} highlight={highlighted} />
+        </Direction>
       </Container>
     )
   }
@@ -97,6 +114,14 @@ const Container = styled.div`
 
 const Direction = styled.div`
   box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  display: flex;
   width: ${props =>
     props.direction === 'up' || props.direction === 'down' ? '100%' : '50%'};
+  transition: box-shadow 300ms linear;
+  box-shadow: ${props =>
+    props.highlight
+      ? `0 0 0 1px rgba(0, 0, 0, 0.1)`
+      : `0 0 0 0 rgba(0, 0, 0, 0.1)`};
 `

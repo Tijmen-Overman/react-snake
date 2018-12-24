@@ -157,7 +157,7 @@ class Game extends Component<*, State> {
     })
   }
 
-  handleReplay = () => {
+  handleContinue = () => {
     const { paused } = this.state
     if (paused) {
       this.togglePause()
@@ -248,6 +248,7 @@ class Game extends Component<*, State> {
           ended={ended}
           changeDirection={this.changeDirection}
           togglePause={this.togglePause}
+          highlighted={score <= 5}
         />
         {!started && <Start onClick={this.handleStart} />}
         {message && (
@@ -256,7 +257,7 @@ class Game extends Component<*, State> {
             paused={paused}
             ended={ended}
             score={score}
-            onClick={this.handleReplay}
+            onClick={this.handleContinue}
           />
         )}
         {/* <Stats

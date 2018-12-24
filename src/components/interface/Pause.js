@@ -19,7 +19,15 @@ type Props = {
 const Pause = (props: Props) => {
   return (
     <Fragment>
-      <PauseButton onClick={props.togglePause}>||</PauseButton>
+      <PauseButton onClick={props.togglePause}>
+        <svg width="12" height="14" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M0 14h4V0H0v14zM8 0v14h4V0H8z"
+            fill="#000"
+            fillRule="nonzero"
+          />
+        </svg>
+      </PauseButton>
       {props.paused && (
         <Overlay>
           <Title>* Paused *</Title>
@@ -37,6 +45,7 @@ const PauseButton = styled(Button)`
   position: absolute;
   top: 20px;
   right: 20px;
+  padding: 10px 12px;
 `
 
 const Title = styled.h3`
