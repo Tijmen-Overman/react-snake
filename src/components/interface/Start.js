@@ -18,13 +18,12 @@ type Props = {
 const Start = (props: Props) => {
   return (
     <Overlay>
-      <Title>Welcome!</Title>
+      <Title>Welkom!</Title>
       <Content>
-        Are you ready to play Snake? Use the arrow keys or press the screen to
-        change the direction of the snake. Click the button below to start
-        playing!
+        Klaar voor Snake? Gebruik de pijltjestoetsen of raak het scherm aan om
+        de Snake te sturen. Klik op de knop om te beginnen!
       </Content>
-      <Button onClick={props.onClick}>Start Game</Button>
+      <Button onClick={props.onClick}>Start spel</Button>
     </Overlay>
   )
 }

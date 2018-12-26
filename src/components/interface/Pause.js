@@ -30,9 +30,9 @@ const Pause = (props: Props) => {
       </PauseButton>
       {props.paused && (
         <Overlay>
-          <Title>* Paused *</Title>
-          <Score>Your score:{props.score}</Score>
-          <ContinueButton onClick={props.togglePause}>Resume</ContinueButton>
+          <Title>* Gepauzeerd *</Title>
+          <Score>Jouw score:{props.score}</Score>
+          <ContinueButton onClick={props.togglePause}>Doorgaan</ContinueButton>
         </Overlay>
       )}
     </Fragment>

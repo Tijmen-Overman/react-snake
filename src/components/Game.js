@@ -110,9 +110,9 @@ class Game extends Component<*, State> {
       this.updateScore()
     }
     if (isOutOfBounds(newSegments[0])) {
-      this.endGame(`Woops! You've run into a wall.`)
+      this.endGame(`Oeps. Je hebt de muur geraakt!`)
     } else if (isBitingTail(newSegments[0], segments)) {
-      this.endGame(`OUCH! You bit your own tail.`)
+      this.endGame(`Auw! Je hebt op je staart gebeten.`)
     } else {
       this.setState({
         segments: newSegments

@@ -21,10 +21,10 @@ const Message = (props: Props) => (
   <Container>
     <Text>
       {props.text}
-      {props.ended && <Score>{`You scored ${props.score} points.`}</Score>}
+      {props.ended && <Score>{`Je hebt ${props.score} punten.`}</Score>}
     </Text>
     <Button onClick={props.onClick}>
-      {props.paused ? 'Continue' : 'Replay'}
+      {props.paused ? 'Doorgaan' : 'Opnieuw spelen'}
     </Button>
   </Container>
 )
